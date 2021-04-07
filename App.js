@@ -6,28 +6,49 @@ import {
   View,
   TextInput,
   ScrollView,
-  TouchableHighlight,
+  Modal,
+  Button,
 } from 'react-native';
+
 import {API_KEY} from '@env';
 
 export default function App() {
   const [state, setState] = useState({
     movie: '',
     results: [],
+    selectedMovie: {},
   });
+
   const getMoviesFromApi = () => {
     return fetch(
       `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=en-US&query=${state.movie}&page=1`,
     )
       .then(response => response.json())
       .then(({results}) => {
-        setState({results: results});
+        setState(prevState => {
+          return {...prevState, results: results};
+        });
       })
       .catch(error => {
         console.error(error);
       });
   };
-  console.log(state.results, 'state');
+  const openSelectedMovie = id => {
+    return fetch(
+      `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=en-US`,
+    )
+      .then(response => response.json())
+      .then(data => {
+        console.log(data, 'datat');
+        setState(prevState => {
+          return {...prevState, selectedMovie: data};
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Movie search</Text>
@@ -35,25 +56,56 @@ export default function App() {
         placeholder="Find movie..."
         style={styles.searchInput}
         value={state.movie}
-        onChangeText={text => setState({movie: text})}
+        onChangeText={text =>
+          setState(prevState => {
+            return {...prevState, movie: text};
+          })
+        }
         onSubmitEditing={getMoviesFromApi}
       />
 
       <ScrollView style={styles.results}>
         {state.results?.map(result => (
-          <TouchableHighlight key={result.id}>
-            <View>
-              <Image
-                style={styles.image}
-                source={{
-                  uri: 'https://image.tmdb.org/t/p/w500' + result.backdrop_path,
-                }}
-              />
-              <Text style={styles.heading}>{result.original_title}</Text>
-            </View>
-          </TouchableHighlight>
+          <View key={result.id} style={styles.result}>
+            <Image
+              style={styles.image}
+              source={{
+                uri: 'https://image.tmdb.org/t/p/w500' + result.backdrop_path,
+              }}
+            />
+            <Text style={styles.heading}>{result.original_title}</Text>
+            <Button title="View" onPress={() => openSelectedMovie(result.id)} />
+          </View>
         ))}
       </ScrollView>
+
+      <Modal
+        animationType="fade"
+        transparent={false}
+        visible={typeof state.selectedMovie.id !== 'undefined'}>
+        <View style={{flex: 1}}>
+          <Image
+            style={styles.image}
+            source={{
+              uri:
+                'https://image.tmdb.org/t/p/w500' +
+                state.selectedMovie.backdrop_path,
+            }}
+          />
+          <Text>{state.selectedMovie.original_title}</Text>
+          <Text>{state.selectedMovie.overview}</Text>
+          <Text>{state.selectedMovie.budget}</Text>
+          <Text>Releas date: {state.selectedMovie.release_date}</Text>
+        </View>
+        <Button
+          title="Back"
+          onPress={() =>
+            setState(prevState => {
+              return {...prevState, selectedMovie: {}};
+            })
+          }
+        />
+      </Modal>
     </View>
   );
 }
@@ -61,10 +113,12 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'grey',
+    backgroundColor: '#191970',
+    opacity: 0.9,
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 50,
+    paddingHorizontal: 10,
   },
   title: {
     fontSize: 35,
@@ -83,18 +137,24 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   results: {
-    flex: 1,
     width: '100%',
     marginBottom: 20,
+    backgroundColor: 'black',
   },
   heading: {
     color: 'white',
     padding: 20,
-    fontSize: 30,
-    fontWeight: '200',
+    fontSize: 20,
+    fontWeight: 'normal',
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   image: {
-    width: '100%',
-    height: 200,
-  }
+    width: '40%',
+    height: 150,
+  },
+  result: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
 });
