@@ -56,7 +56,7 @@ export default function MoviesSearch() {
       <TextInput
         placeholder="Find movie..."
         style={styles.searchInput}
-        value={state.movies}
+        value={movies}
         onChangeText={text =>
           setState(prevState => {
             return {...prevState, movies: text};
