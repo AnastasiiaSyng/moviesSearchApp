@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
+import {styles} from './MoviesSearch.styles';
 import {
-  StyleSheet,
   Image,
   Text,
   View,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Modal,
   Button,
+  TouchableHighlight,
 } from 'react-native';
 
 import {API_KEY} from '@env';
@@ -74,7 +75,13 @@ export default function MoviesSearch() {
               }}
             />
             <Text style={styles.heading}>{original_title}</Text>
-            <Button title="View" onPress={() => openSelectedMovie(id)} />
+            <TouchableHighlight style={styles.buttonStyles}>
+              <Button
+                color="#374785"
+                title="View"
+                onPress={() => openSelectedMovie(id)}
+              />
+            </TouchableHighlight>
           </View>
         ))}
       </ScrollView>
@@ -83,77 +90,34 @@ export default function MoviesSearch() {
         animationType="fade"
         transparent={false}
         visible={typeof selectedMovie.id !== 'undefined'}>
-        <View style={{flex: 1}}>
+        <View style={styles.modalContainer}>
           <Image
-            style={styles.image}
+            style={styles.imageModal}
             source={{
               uri:
                 'https://image.tmdb.org/t/p/w500' + selectedMovie.backdrop_path,
             }}
           />
-          <Text>{selectedMovie.original_title}</Text>
-          <Text>{selectedMovie.overview}</Text>
-          <Text>Budget:${selectedMovie.budget}</Text>
-          <Text>Releas date: {selectedMovie.release_date}</Text>
+          <Text style={styles.infoModal}>{selectedMovie.original_title}</Text>
+          <Text style={styles.infoModal}>{selectedMovie.overview}</Text>
+          <Text style={styles.infoModal}>Budget:${selectedMovie.budget}</Text>
+          <Text style={styles.infoModal}>
+            Releas date: {selectedMovie.release_date}
+          </Text>
+
+          <TouchableHighlight style={styles.buttonStyles}>
+            <Button
+              color="#374785"
+              title="Back"
+              onPress={() =>
+                setState(prevState => {
+                  return {...prevState, selectedMovie: {}};
+                })
+              }
+            />
+          </TouchableHighlight>
         </View>
-        <Button
-          title="Back"
-          onPress={() =>
-            setState(prevState => {
-              return {...prevState, selectedMovie: {}};
-            })
-          }
-        />
       </Modal>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#191970',
-    opacity: 0.9,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 50,
-    paddingHorizontal: 10,
-  },
-  title: {
-    fontSize: 35,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 30,
-    color: 'white',
-  },
-  searchInput: {
-    width: '90%',
-    fontSize: 20,
-    fontWeight: '300',
-    backgroundColor: 'white',
-    borderRadius: 5,
-    padding: 20,
-    marginBottom: 40,
-  },
-  results: {
-    width: '100%',
-    marginBottom: 20,
-    backgroundColor: 'black',
-  },
-  heading: {
-    color: 'white',
-    padding: 20,
-    fontSize: 20,
-    fontWeight: 'normal',
-    flexWrap: 'wrap',
-    flexShrink: 1,
-  },
-  image: {
-    width: '40%',
-    height: 150,
-  },
-  result: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-});
